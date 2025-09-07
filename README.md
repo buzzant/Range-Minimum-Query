@@ -460,23 +460,82 @@ The verbosity and complexity pay off in performance-critical applications where 
 
 ## Building This Project
 
+### Prerequisites
+
+#### C++ Compiler
+- **macOS**: Install Xcode Command Line Tools (includes `g++`/`clang++`)
+  ```bash
+  xcode-select --install
+  ```
+- **Linux**: Install GCC or Clang
+  ```bash
+  sudo apt-get install g++  # Ubuntu/Debian
+  sudo yum install gcc-c++  # RHEL/CentOS
+  ```
+
+#### Python Environment (for visualization)
+Install `uv` for Python package management:
+```bash
+# macOS with Homebrew
+brew install uv
+
+# Or using the official installer
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+### Quick Start
+
+1. **Compile the benchmark program:**
+   ```bash
+   g++ -std=c++17 -O3 -Wall -Wextra benchmark_complexity.cpp -o benchmark_complexity
+   ```
+
+2. **Run the benchmark:**
+   ```bash
+   ./benchmark_complexity
+   ```
+
+3. **Set up Python environment and generate visualization graphs:**
+   ```bash
+   # Create virtual environment and install dependencies
+   uv venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   uv pip install -r requirements.txt
+   
+   # Generate visualization graphs
+   python visualize_complexity.py
+   ```
+
+### Building Individual Tests
+
 ```bash
 # Build all tests
-g++ -std=c++17 -O3 tests/unit/test_naive.cpp -o test_naive.exe
-g++ -std=c++17 -O3 tests/unit/test_dp.cpp -o test_dp.exe
-g++ -std=c++17 -O3 tests/unit/test_sparse_table.cpp -o test_sparse_table.exe
-g++ -std=c++17 -O3 tests/unit/test_block.cpp -o test_block.exe
-g++ -std=c++17 -O3 tests/unit/test_lca.cpp -o test_lca.exe
+g++ -std=c++17 -O3 tests/unit/test_naive.cpp -o test_naive
+g++ -std=c++17 -O3 tests/unit/test_dp.cpp -o test_dp
+g++ -std=c++17 -O3 tests/unit/test_sparse_table.cpp -o test_sparse_table
+g++ -std=c++17 -O3 tests/unit/test_block.cpp -o test_block
+g++ -std=c++17 -O3 tests/unit/test_lca.cpp -o test_lca
 
 # Run all tests
-./test_naive.exe && ./test_dp.exe && ./test_sparse_table.exe && ./test_block.exe && ./test_lca.exe
-
-# Build and run benchmark
-g++ -std=c++17 -O3 benchmark_complexity.cpp -o benchmark.exe
-./benchmark.exe
-
-# Generate graphs (requires Python with matplotlib, pandas)
-python visualize_complexity.py
+./test_naive && ./test_dp && ./test_sparse_table && ./test_block && ./test_lca
 ```
+
+### Compilation Flags Explained
+
+- `-std=c++17`: Use C++17 standard
+- `-O3`: Maximum optimization level for performance
+- `-Wall -Wextra`: Enable all warnings to catch potential issues
+- `-o`: Specify output executable name
+
+### Output Files
+
+After running the benchmark and visualization:
+- `benchmark_preprocessing.csv`: Preprocessing time measurements
+- `benchmark_query.csv`: Query time measurements
+- `benchmark_memory.csv`: Memory usage measurements
+- `preprocessing_complexity.png`: Preprocessing time complexity graph
+- `query_complexity.png`: Query time complexity graph
+- `memory_complexity.png`: Memory usage graph
+- `rmq_complexity_comparison.png`: Comprehensive comparison graph
 
 Happy coding! Remember: C++ is powerful but unforgiving. When in doubt, use smart pointers and STL containers rather than raw pointers and arrays.
