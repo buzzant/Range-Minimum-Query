@@ -487,12 +487,12 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 1. **Compile the benchmark program:**
    ```bash
-   g++ -std=c++17 -O3 -Wall -Wextra benchmark_complexity.cpp -o benchmark_complexity
+   g++ -std=c++17 -O3 -Wall -Wextra benchmarks/benchmark_complexity.cpp -o benchmarks/benchmark_complexity
    ```
 
 2. **Run the benchmark:**
    ```bash
-   ./benchmark_complexity
+   ./benchmarks/benchmark_complexity
    ```
 
 3. **Set up Python environment and generate visualization graphs:**
@@ -503,21 +503,21 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
    uv pip install -r requirements.txt
    
    # Generate visualization graphs
-   python visualize_complexity.py
+   cd benchmarks && python visualize_complexity.py
    ```
 
 ### Building Individual Tests
 
 ```bash
 # Build all tests
-g++ -std=c++17 -O3 tests/unit/test_naive.cpp -o test_naive
-g++ -std=c++17 -O3 tests/unit/test_dp.cpp -o test_dp
-g++ -std=c++17 -O3 tests/unit/test_sparse_table.cpp -o test_sparse_table
-g++ -std=c++17 -O3 tests/unit/test_block.cpp -o test_block
-g++ -std=c++17 -O3 tests/unit/test_lca.cpp -o test_lca
+g++ -std=c++17 -O3 tests/unit/test_naive.cpp -o executables/test_naive
+g++ -std=c++17 -O3 tests/unit/test_dp.cpp -o executables/test_dp
+g++ -std=c++17 -O3 tests/unit/test_sparse_table.cpp -o executables/test_sparse_table
+g++ -std=c++17 -O3 tests/unit/test_block.cpp -o executables/test_block
+g++ -std=c++17 -O3 tests/unit/test_lca.cpp -o executables/test_lca
 
 # Run all tests
-./test_naive && ./test_dp && ./test_sparse_table && ./test_block && ./test_lca
+./executables/test_naive && ./executables/test_dp && ./executables/test_sparse_table && ./executables/test_block && ./executables/test_lca
 ```
 
 ### Compilation Flags Explained
@@ -530,12 +530,18 @@ g++ -std=c++17 -O3 tests/unit/test_lca.cpp -o test_lca
 ### Output Files
 
 After running the benchmark and visualization:
-- `benchmark_preprocessing.csv`: Preprocessing time measurements
-- `benchmark_query.csv`: Query time measurements
-- `benchmark_memory.csv`: Memory usage measurements
-- `preprocessing_complexity.png`: Preprocessing time complexity graph
-- `query_complexity.png`: Query time complexity graph
-- `memory_complexity.png`: Memory usage graph
-- `rmq_complexity_comparison.png`: Comprehensive comparison graph
+- `benchmarks/benchmark_preprocessing.csv`: Preprocessing time measurements
+- `benchmarks/benchmark_query.csv`: Query time measurements
+- `benchmarks/benchmark_memory.csv`: Memory usage measurements
+- `visualizations/preprocessing_complexity.png`: Preprocessing time complexity graph
+- `visualizations/query_complexity.png`: Query time complexity graph
+- `visualizations/memory_complexity.png`: Memory usage graph
+- `visualizations/rmq_complexity_comparison.png`: Comprehensive comparison graph
+
+### Additional Resources
+
+- **Comprehensive Tutorial**: See `tutorials/rmq_step_by_step_tutorial.pdf` for a detailed, beginner-friendly explanation of all algorithms
+- **Algorithm Documentation**: Check `docs/` for detailed explanations of each algorithm
+- **Implementation Details**: Review `docs/algorithms_explanation.md` for technical implementation notes
 
 Happy coding! Remember: C++ is powerful but unforgiving. When in doubt, use smart pointers and STL containers rather than raw pointers and arrays.

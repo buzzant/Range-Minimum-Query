@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>RMQ Step-by-Step Tutorial</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="github-markdown.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">RMQ Step-by-Step Tutorial</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#range-minimum-query-a-friendly-step-by-step-tutorial"
+id="toc-range-minimum-query-a-friendly-step-by-step-tutorial">Range
+Minimum Query: A Friendly Step-by-Step Tutorial</a>
+<ul>
+<li><a href="#what-is-range-minimum-query-rmq"
+id="toc-what-is-range-minimum-query-rmq">What is Range Minimum Query
+(RMQ)?</a></li>
+<li><a href="#algorithm-1-naive-approach-the-straightforward-way"
+id="toc-algorithm-1-naive-approach-the-straightforward-way">Algorithm 1:
+Naive Approach (The Straightforward Way)</a>
+<ul>
+<li><a href="#how-it-works" id="toc-how-it-works">How It Works</a></li>
+<li><a href="#step-by-step-example"
+id="toc-step-by-step-example">Step-by-Step Example</a></li>
+<li><a href="#visual-representation"
+id="toc-visual-representation">Visual Representation</a></li>
+<li><a href="#time-complexity-deep-dive"
+id="toc-time-complexity-deep-dive">Time Complexity Deep Dive</a></li>
+</ul></li>
+<li><a href="#algorithm-2-dynamic-programming-pre-calculate-everything"
+id="toc-algorithm-2-dynamic-programming-pre-calculate-everything">Algorithm
+2: Dynamic Programming (Pre-calculate Everything!)</a>
+<ul>
+<li><a href="#the-idea" id="toc-the-idea">The Idea</a></li>
+<li><a href="#building-the-dp-table-step-by-step"
+id="toc-building-the-dp-table-step-by-step">Building the DP Table
+Step-by-Step</a></li>
+<li><a href="#final-dp-table" id="toc-final-dp-table">Final DP
+Table</a></li>
+<li><a href="#query-example" id="toc-query-example">Query
+Example</a></li>
+<li><a href="#time-complexity-deep-dive-1"
+id="toc-time-complexity-deep-dive-1">Time Complexity Deep Dive</a></li>
+</ul></li>
+<li><a href="#algorithm-3-sparse-table-binary-lifting-magic"
+id="toc-algorithm-3-sparse-table-binary-lifting-magic">Algorithm 3:
+Sparse Table (Binary Lifting Magic!)</a>
+<ul>
+<li><a href="#the-clever-idea" id="toc-the-clever-idea">The Clever
+Idea</a></li>
+<li><a href="#building-the-sparse-table-step-by-step"
+id="toc-building-the-sparse-table-step-by-step">Building the Sparse
+Table Step-by-Step</a></li>
+<li><a href="#sparse-table-visualization"
+id="toc-sparse-table-visualization">Sparse Table Visualization</a></li>
+<li><a href="#query-example-query2-6"
+id="toc-query-example-query2-6">Query Example: Query(2, 6)</a></li>
+<li><a href="#visual-of-query-coverage"
+id="toc-visual-of-query-coverage">Visual of Query Coverage</a></li>
+<li><a href="#time-complexity-deep-dive-2"
+id="toc-time-complexity-deep-dive-2">Time Complexity Deep Dive</a></li>
+</ul></li>
+<li><a href="#algorithm-4-block-decomposition-square-root-decomposition"
+id="toc-algorithm-4-block-decomposition-square-root-decomposition">Algorithm
+4: Block Decomposition (Square Root Decomposition)</a>
+<ul>
+<li><a href="#the-balanced-idea" id="toc-the-balanced-idea">The Balanced
+Idea</a></li>
+<li><a href="#building-blocks-step-by-step"
+id="toc-building-blocks-step-by-step">Building Blocks
+Step-by-Step</a></li>
+<li><a href="#visual-representation-1"
+id="toc-visual-representation-1">Visual Representation</a></li>
+<li><a href="#query-example-query1-7"
+id="toc-query-example-query1-7">Query Example: Query(1, 7)</a></li>
+<li><a href="#visual-of-query" id="toc-visual-of-query">Visual of
+Query</a></li>
+<li><a href="#time-complexity-deep-dive-3"
+id="toc-time-complexity-deep-dive-3">Time Complexity Deep Dive</a></li>
+</ul></li>
+<li><a href="#algorithm-5-lca-based-rmq-the-tree-transformation"
+id="toc-algorithm-5-lca-based-rmq-the-tree-transformation">Algorithm 5:
+LCA-based RMQ (The Tree Transformation!)</a>
+<ul>
+<li><a href="#the-amazing-connection"
+id="toc-the-amazing-connection">The Amazing Connection</a></li>
+<li><a href="#building-the-cartesian-tree-step-by-step"
+id="toc-building-the-cartesian-tree-step-by-step">Building the Cartesian
+Tree Step-by-Step</a></li>
+<li><a href="#final-cartesian-tree" id="toc-final-cartesian-tree">Final
+Cartesian Tree</a></li>
+<li><a href="#how-rmq-becomes-lca" id="toc-how-rmq-becomes-lca">How RMQ
+becomes LCA</a></li>
+<li><a href="#lca-using-binary-lifting"
+id="toc-lca-using-binary-lifting">LCA using Binary Lifting</a></li>
+<li><a href="#time-complexity-deep-dive-4"
+id="toc-time-complexity-deep-dive-4">Time Complexity Deep Dive</a></li>
+</ul></li>
+<li><a href="#comparison-which-algorithm-to-choose"
+id="toc-comparison-which-algorithm-to-choose">Comparison: Which
+Algorithm to Choose?</a>
+<ul>
+<li><a href="#quick-decision-guide" id="toc-quick-decision-guide">Quick
+Decision Guide</a></li>
+<li><a href="#performance-summary-table"
+id="toc-performance-summary-table">Performance Summary Table</a></li>
+</ul></li>
+<li><a href="#interactive-examples"
+id="toc-interactive-examples">Interactive Examples</a>
+<ul>
+<li><a href="#lets-trace-through-a-complete-example"
+id="toc-lets-trace-through-a-complete-example">Let’s Trace Through a
+Complete Example</a></li>
+</ul></li>
+<li><a href="#practice-problems" id="toc-practice-problems">Practice
+Problems</a>
+<ul>
+<li><a href="#problem-1-build-your-own-dp-table"
+id="toc-problem-1-build-your-own-dp-table">Problem 1: Build Your Own DP
+Table</a></li>
+<li><a href="#problem-2-sparse-table-query"
+id="toc-problem-2-sparse-table-query">Problem 2: Sparse Table
+Query</a></li>
+</ul></li>
+<li><a href="#tips-and-tricks" id="toc-tips-and-tricks">Tips and
+Tricks</a>
+<ul>
+<li><a href="#sparse-table-power-of-2-trick"
+id="toc-sparse-table-power-of-2-trick">1. Sparse Table Power-of-2
+Trick</a></li>
+<li><a href="#block-size-selection" id="toc-block-size-selection">2.
+Block Size Selection</a></li>
+<li><a href="#dp-memory-optimization" id="toc-dp-memory-optimization">3.
+DP Memory Optimization</a></li>
+<li><a href="#cartesian-tree-stack-trick"
+id="toc-cartesian-tree-stack-trick">4. Cartesian Tree Stack
+Trick</a></li>
+</ul></li>
+<li><a href="#deep-dive-understanding-complexity-growth"
+id="toc-deep-dive-understanding-complexity-growth">Deep Dive:
+Understanding Complexity Growth</a>
+<ul>
+<li><a href="#how-complexities-compare-as-n-grows"
+id="toc-how-complexities-compare-as-n-grows">How Complexities Compare As
+N Grows</a></li>
+<li><a href="#time-complexity-visualization"
+id="toc-time-complexity-visualization">Time Complexity
+Visualization</a></li>
+<li><a href="#when-each-algorithm-wins"
+id="toc-when-each-algorithm-wins">When Each Algorithm Wins</a></li>
+<li><a href="#memory-vs-speed-trade-offs"
+id="toc-memory-vs-speed-trade-offs">Memory vs Speed Trade-offs</a></li>
+<li><a href="#big-o-doesnt-tell-the-whole-story"
+id="toc-big-o-doesnt-tell-the-whole-story">Big-O Doesn’t Tell the Whole
+Story!</a></li>
+<li><a href="#amortized-analysis-when-average-case-matters"
+id="toc-amortized-analysis-when-average-case-matters">Amortized
+Analysis: When Average Case Matters</a></li>
+<li><a href="#the-complexity-hierarchy"
+id="toc-the-complexity-hierarchy">The Complexity Hierarchy</a></li>
+</ul></li>
+<li><a href="#conclusion" id="toc-conclusion">Conclusion</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="range-minimum-query-a-friendly-step-by-step-tutorial">Range
+Minimum Query: A Friendly Step-by-Step Tutorial</h1>
+<h2 id="what-is-range-minimum-query-rmq">What is Range Minimum Query
+(RMQ)?</h2>
+<p>Imagine you have a list of numbers, and someone keeps asking you:
+“What’s the smallest number between position 3 and position 7?” That’s
+exactly what RMQ solves!</p>
+<p><strong>Example Array:</strong></p>
+<pre><code>Index: 0  1  2  3  4  5  6  7
+Value: 5  2  4  7  1  3  6  8</code></pre>
+<p><strong>Query(2, 5)</strong> = “What’s the minimum between index 2
+and 5?” - Look at values: [4, 7, 1, 3] - Answer: 1 (at index 4)</p>
+<p>Now, let’s explore 5 different ways to solve this problem, from
+simple to sophisticated!</p>
+<hr />
+<h2 id="algorithm-1-naive-approach-the-straightforward-way">Algorithm 1:
+Naive Approach (The Straightforward Way)</h2>
+<h3 id="how-it-works">How It Works</h3>
+<p>Just look at every element in the range and find the minimum. It’s
+like reading through a list with your finger!</p>
+<h3 id="step-by-step-example">Step-by-Step Example</h3>
+<p><strong>Array:</strong> [5, 2, 4, 7, 1, 3, 6, 8]</p>
+<p><strong>Query(2, 5):</strong></p>
+<pre><code>Step 1: Look at index 2 → value is 4, min = 4
+Step 2: Look at index 3 → value is 7, min = 4 (no change)
+Step 3: Look at index 4 → value is 1, min = 1 (new minimum!)
+Step 4: Look at index 5 → value is 3, min = 1 (no change)
+Answer: 1</code></pre>
+<h3 id="visual-representation">Visual Representation</h3>
+<pre><code>Query(2, 5):
+[5, 2, |4, 7, 1, 3|, 6, 8]
+        ↑  ↑  ↑  ↑
+        Check each one
+        Return: 1</code></pre>
+<h3 id="time-complexity-deep-dive">Time Complexity Deep Dive</h3>
+<h4 id="why-is-preprocessing-o1">Why is Preprocessing O(1)?</h4>
+<ul>
+<li>We literally do nothing! Just store the array as-is.</li>
+<li>No computation, no extra data structures.</li>
+<li>Time taken: constant, regardless of array size.</li>
+</ul>
+<h4 id="why-is-query-time-on">Why is Query Time O(n)?</h4>
+<p>Let’s count the operations:</p>
+<pre><code>Query(L, R):
+1. Initialize min = array[L]     → 1 operation
+2. For each element from L+1 to R:
+   - Compare with current min    → (R-L) comparisons
+   - Update min if needed        → up to (R-L) assignments
+Total: 2(R-L) + 1 operations</code></pre>
+<p><strong>Worst case:</strong> Query(0, n-1) checks all n elements →
+O(n) <strong>Best case:</strong> Query(i, i) checks 1 element → O(1)
+<strong>Average case:</strong> Query covers n/2 elements → O(n)</p>
+<h4 id="space-complexity-on">Space Complexity: O(n)</h4>
+<ul>
+<li>Original array: n elements × 4 bytes (for int) = 4n bytes</li>
+<li>No additional structures needed</li>
+<li>Total space: O(n)</li>
+</ul>
+<h4 id="real-world-performance">Real-world Performance</h4>
+<p>For an array of 1,000,000 elements: - Preprocessing: 0 microseconds -
+Query (worst case): ~1,000 microseconds (1 ms) - Query (average): ~500
+microseconds</p>
+<p><strong>When to Use:</strong> - Queries are rare (&lt; 100 queries
+total) - Array changes frequently (after every few queries) - Array is
+small (&lt; 1000 elements)</p>
+<hr />
+<h2
+id="algorithm-2-dynamic-programming-pre-calculate-everything">Algorithm
+2: Dynamic Programming (Pre-calculate Everything!)</h2>
+<h3 id="the-idea">The Idea</h3>
+<p>What if we pre-calculate the answer for EVERY possible range? Then
+queries become instant lookups!</p>
+<h3 id="building-the-dp-table-step-by-step">Building the DP Table
+Step-by-Step</h3>
+<p><strong>Array:</strong> [5, 2, 4, 7]</p>
+<p>We’ll build a table where <code>dp[i][j]</code> = minimum value from
+index i to j.</p>
+<h4 id="step-1-single-elements-length-1">Step 1: Single elements (length
+= 1)</h4>
+<pre><code>dp[0][0] = 5  (just element at index 0)
+dp[1][1] = 2  (just element at index 1)
+dp[2][2] = 4  (just element at index 2)
+dp[3][3] = 7  (just element at index 3)</code></pre>
+<h4 id="step-2-pairs-length-2">Step 2: Pairs (length = 2)</h4>
+<pre><code>dp[0][1] = min(5, 2) = 2
+dp[1][2] = min(2, 4) = 2
+dp[2][3] = min(4, 7) = 4</code></pre>
+<h4 id="step-3-triples-length-3">Step 3: Triples (length = 3)</h4>
+<pre><code>dp[0][2] = min(dp[0][1], 4) = min(2, 4) = 2
+dp[1][3] = min(dp[1][2], 7) = min(2, 7) = 2</code></pre>
+<h4 id="step-4-full-array-length-4">Step 4: Full array (length = 4)</h4>
+<pre><code>dp[0][3] = min(dp[0][2], 7) = min(2, 7) = 2</code></pre>
+<h3 id="final-dp-table">Final DP Table</h3>
+<pre><code>    j→  0  1  2  3
+i↓     -----------
+0  |   5  2  2  2
+1  |   -  2  2  2
+2  |   -  -  4  4
+3  |   -  -  -  7</code></pre>
+<h3 id="query-example">Query Example</h3>
+<p><strong>Query(1, 3):</strong> Just look up <code>dp[1][3] = 2</code>.
+Instant!</p>
+<h3 id="time-complexity-deep-dive-1">Time Complexity Deep Dive</h3>
+<h4 id="why-is-preprocessing-on²">Why is Preprocessing O(n²)?</h4>
+<p>Let’s count exactly how many cells we fill:</p>
+<pre><code>For array of size n:
+- Ranges of length 1: n cells
+- Ranges of length 2: n-1 cells
+- Ranges of length 3: n-2 cells
+- ...
+- Ranges of length n: 1 cell
+
+Total cells = n + (n-1) + (n-2) + ... + 1 = n(n+1)/2</code></pre>
+<p><strong>Mathematical proof:</strong></p>
+<pre><code>Sum = n(n+1)/2 = (n² + n)/2 = O(n²)</code></pre>
+<p><strong>Actual operations per cell:</strong></p>
+<pre><code>dp[i][j] = min(dp[i][j-1], array[j])
+           ↑ 1 lookup + 1 comparison + 1 assignment = 3 operations
+Total operations = 3 × n²/2 = O(n²)</code></pre>
+<h4 id="why-is-query-time-o1">Why is Query Time O(1)?</h4>
+<pre><code>Query(L, R):
+1. Access dp[L][R]  → 1 array access
+2. Return value     → 1 operation
+Total: 2 operations = O(1)</code></pre>
+<p>No loops, no comparisons, just direct memory access!</p>
+<h4 id="space-complexity-on²">Space Complexity: O(n²)</h4>
+<pre><code>For array of size n:
+- DP table: n × n × 4 bytes = 4n² bytes
+- Original array: n × 4 bytes = 4n bytes
+Total: 4n² + 4n = O(n²)</code></pre>
+<p><strong>Memory usage examples:</strong> - n = 100: ~40 KB - n =
+1,000: ~4 MB - n = 10,000: ~400 MB (getting expensive!) - n = 100,000:
+~40 GB (impractical!)</p>
+<h4 id="building-time-analysis">Building Time Analysis</h4>
+<p>For an array of size n:</p>
+<pre><code>for (length = 1 to n):           → n iterations
+    for (start = 0 to n-length): → average n/2 iterations
+        dp[start][end] = ...      → O(1) operation
+Total: n × n/2 × 1 = O(n²)</code></pre>
+<h4 id="real-world-performance-1">Real-world Performance</h4>
+<p>For n = 1,000: - Preprocessing: ~2-3 milliseconds - Memory used: ~4
+MB - Query time: ~0.01 microseconds (10 nanoseconds!) - Break-even
+point: Need ~2,000 queries to justify preprocessing</p>
+<p><strong>When to Use:</strong> - Array size &lt; 2,000 elements -
+Number of queries &gt; n²/1000 - Can afford O(n²) memory - Static data
+(no updates)</p>
+<hr />
+<h2 id="algorithm-3-sparse-table-binary-lifting-magic">Algorithm 3:
+Sparse Table (Binary Lifting Magic!)</h2>
+<h3 id="the-clever-idea">The Clever Idea</h3>
+<p>Instead of storing ALL ranges, only store ranges with lengths that
+are powers of 2 (1, 2, 4, 8, …). Any range can be covered by at most 2
+overlapping power-of-2 ranges!</p>
+<h3 id="building-the-sparse-table-step-by-step">Building the Sparse
+Table Step-by-Step</h3>
+<p><strong>Array:</strong> [5, 2, 4, 7, 1, 3, 6, 8]</p>
+<p>We build <code>st[i][j]</code> = minimum in range starting at i with
+length 2^j.</p>
+<h4 id="step-1-length-1-20-1">Step 1: Length 1 (2^0 = 1)</h4>
+<pre><code>st[0][0] = 5  (range [0,0])
+st[1][0] = 2  (range [1,1])
+st[2][0] = 4  (range [2,2])
+st[3][0] = 7  (range [3,3])
+st[4][0] = 1  (range [4,4])
+st[5][0] = 3  (range [5,5])
+st[6][0] = 6  (range [6,6])
+st[7][0] = 8  (range [7,7])</code></pre>
+<h4 id="step-2-length-2-21-2">Step 2: Length 2 (2^1 = 2)</h4>
+<pre><code>st[0][1] = min(st[0][0], st[1][0]) = min(5, 2) = 2  (range [0,1])
+st[1][1] = min(st[1][0], st[2][0]) = min(2, 4) = 2  (range [1,2])
+st[2][1] = min(st[2][0], st[3][0]) = min(4, 7) = 4  (range [2,3])
+st[3][1] = min(st[3][0], st[4][0]) = min(7, 1) = 1  (range [3,4])
+st[4][1] = min(st[4][0], st[5][0]) = min(1, 3) = 1  (range [4,5])
+st[5][1] = min(st[5][0], st[6][0]) = min(3, 6) = 3  (range [5,6])
+st[6][1] = min(st[6][0], st[7][0]) = min(6, 8) = 6  (range [6,7])</code></pre>
+<h4 id="step-3-length-4-22-4">Step 3: Length 4 (2^2 = 4)</h4>
+<pre><code>st[0][2] = min(st[0][1], st[2][1]) = min(2, 4) = 2  (range [0,3])
+st[1][2] = min(st[1][1], st[3][1]) = min(2, 1) = 1  (range [1,4])
+st[2][2] = min(st[2][1], st[4][1]) = min(4, 1) = 1  (range [2,5])
+st[3][2] = min(st[3][1], st[5][1]) = min(1, 3) = 1  (range [3,6])
+st[4][2] = min(st[4][1], st[6][1]) = min(1, 6) = 1  (range [4,7])</code></pre>
+<h4 id="step-4-length-8-23-8">Step 4: Length 8 (2^3 = 8)</h4>
+<pre><code>st[0][3] = min(st[0][2], st[4][2]) = min(2, 1) = 1  (range [0,7])</code></pre>
+<h3 id="sparse-table-visualization">Sparse Table Visualization</h3>
+<pre><code>         Length→
+Index↓   1   2   4   8
+0        5   2   2   1
+1        2   2   1   -
+2        4   4   1   -
+3        7   1   1   -
+4        1   1   1   -
+5        3   3   -   -
+6        6   6   -   -
+7        8   -   -   -</code></pre>
+<h3 id="query-example-query2-6">Query Example: Query(2, 6)</h3>
+<pre><code>Range length = 6 - 2 + 1 = 5
+Largest power of 2 ≤ 5 is 4 (2^2)
+
+Split into two overlapping ranges of length 4:
+- Range 1: [2, 5] → st[2][2] = 1
+- Range 2: [3, 6] → st[3][2] = 1
+
+Answer: min(1, 1) = 1</code></pre>
+<h3 id="visual-of-query-coverage">Visual of Query Coverage</h3>
+<pre><code>Query [2, 6]:
+Index: 0  1  2  3  4  5  6  7
+Value: 5  2  4  7  1  3  6  8
+            |-----------|     (st[2][2]: covers 2-5)
+               |-----------|  (st[3][2]: covers 3-6)
+            |============|    (Full coverage with overlap!)</code></pre>
+<h3 id="time-complexity-deep-dive-2">Time Complexity Deep Dive</h3>
+<h4 id="why-is-preprocessing-on-log-n">Why is Preprocessing O(n log
+n)?</h4>
+<p><strong>Understanding log n levels:</strong></p>
+<pre><code>For array of size n = 16:
+- Level 0 (length 1):  16 entries
+- Level 1 (length 2):  15 entries  
+- Level 2 (length 4):  13 entries
+- Level 3 (length 8):  9 entries
+- Level 4 (length 16): 1 entry
+
+Number of levels = log₂(16) + 1 = 5 levels</code></pre>
+<p><strong>Counting total operations:</strong></p>
+<pre><code>for j from 0 to log(n):              → log n iterations
+    for i from 0 to n - 2^j:         → (n - 2^j + 1) iterations
+        st[i][j] = min(st[i][j-1], st[i+2^(j-1)][j-1])
+                   ↑ 2 lookups + 1 comparison + 1 assignment
+
+Total entries = n×1 + (n-1)×1 + (n-3)×1 + ... 
+              ≈ n × log n entries
+Each entry: O(1) operation
+Total: O(n log n)</code></pre>
+<p><strong>Mathematical analysis:</strong></p>
+<pre><code>Sum = Σ(j=0 to log n) of (n - 2^j + 1)
+    = n×log(n) - (2^(log n+1) - 1) + log(n)
+    = n×log(n) - (2n - 1) + log(n)
+    = O(n log n)</code></pre>
+<h4 id="why-is-query-time-o1-1">Why is Query Time O(1)?</h4>
+<p><strong>The brilliant trick:</strong></p>
+<pre><code>Query(L, R):
+1. Calculate k = floor(log₂(R - L + 1))  → O(1) with bit operations
+2. Access st[L][k]                       → O(1) array access
+3. Access st[R - 2^k + 1][k]            → O(1) array access  
+4. Return min of the two                 → O(1) comparison
+Total: 4 operations = O(1)</code></pre>
+<p><strong>How to calculate log₂ in O(1):</strong></p>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Using built-in functions (compiled to single CPU instruction)</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> k <span class="op">=</span> <span class="fu">__builtin_clz</span><span class="op">(</span><span class="dv">1</span><span class="op">)</span> <span class="op">-</span> <span class="fu">__builtin_clz</span><span class="op">(</span>R <span class="op">-</span> L <span class="op">+</span> <span class="dv">1</span><span class="op">);</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="co">// or</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> k <span class="op">=</span> <span class="dv">31</span> <span class="op">-</span> <span class="fu">__builtin_clz</span><span class="op">(</span>R <span class="op">-</span> L <span class="op">+</span> <span class="dv">1</span><span class="op">);</span>  <span class="co">// for 32-bit integers</span></span></code></pre></div>
+<h4 id="space-complexity-on-log-n">Space Complexity: O(n log n)</h4>
+<pre><code>Sparse table dimensions:
+- Rows: n (one for each starting position)
+- Columns: log₂(n) + 1 (one for each power of 2)
+- Each cell: 4 bytes (integer)
+
+Total space = n × (log n + 1) × 4 bytes = O(n log n)</code></pre>
+<p><strong>Memory usage examples:</strong> - n = 1,000: ~40 KB
+(log₂(1000) ≈ 10) - n = 100,000: ~6.4 MB (log₂(100000) ≈ 17) - n =
+1,000,000: ~80 MB (log₂(1000000) ≈ 20)</p>
+<p>Much better than DP’s O(n²)!</p>
+<h4 id="why-can-we-overlap-ranges">Why Can We Overlap Ranges?</h4>
+<p>This only works because MIN is an <strong>idempotent</strong>
+operation:</p>
+<pre><code>min(a, a) = a
+min(min(a,b), min(b,c)) = min(a,b,c)</code></pre>
+<p>So overlapping doesn’t affect the result!</p>
+<h4 id="real-world-performance-2">Real-world Performance</h4>
+<p>For n = 100,000: - Preprocessing: ~15-20 milliseconds - Memory used:
+~6.4 MB - Query time: ~0.05 microseconds (50 nanoseconds) - Can handle
+millions of queries per second!</p>
+<p><strong>Comparison with DP:</strong> - DP for n=100,000: 40 GB memory
+(impractical) - Sparse Table: 6.4 MB memory (very practical) - Both have
+O(1) query, but Sparse Table scales much better</p>
+<p><strong>When to Use:</strong> - Large static arrays (up to 10⁷
+elements) - Need absolutely fastest query time - Can afford O(n log n)
+preprocessing - No updates to the array</p>
+<hr />
+<h2
+id="algorithm-4-block-decomposition-square-root-decomposition">Algorithm
+4: Block Decomposition (Square Root Decomposition)</h2>
+<h3 id="the-balanced-idea">The Balanced Idea</h3>
+<p>Divide the array into blocks of size √n. Pre-compute the minimum for
+each complete block. For queries, combine partial blocks with complete
+blocks.</p>
+<h3 id="building-blocks-step-by-step">Building Blocks Step-by-Step</h3>
+<p><strong>Array:</strong> [5, 2, 4, 7, 1, 3, 6, 8, 9] (n = 9,
+block_size = 3)</p>
+<h4 id="step-1-divide-into-blocks">Step 1: Divide into blocks</h4>
+<pre><code>Block 0: [5, 2, 4]
+Block 1: [7, 1, 3]
+Block 2: [6, 8, 9]</code></pre>
+<h4 id="step-2-pre-compute-block-minimums">Step 2: Pre-compute block
+minimums</h4>
+<pre><code>block_min[0] = min(5, 2, 4) = 2
+block_min[1] = min(7, 1, 3) = 1
+block_min[2] = min(6, 8, 9) = 6</code></pre>
+<h3 id="visual-representation-1">Visual Representation</h3>
+<pre><code>Array:  [5, 2, 4] [7, 1, 3] [6, 8, 9]
+         Block 0   Block 1   Block 2
+Min:        2         1         6</code></pre>
+<h3 id="query-example-query1-7">Query Example: Query(1, 7)</h3>
+<h4 id="step-1-identify-affected-blocks">Step 1: Identify affected
+blocks</h4>
+<pre><code>Index 1 is in Block 0 (partial)
+Index 7 is in Block 2 (partial)
+Block 1 is completely covered</code></pre>
+<h4 id="step-2-calculate-minimum">Step 2: Calculate minimum</h4>
+<pre><code>Partial Block 0: elements [1, 2] → min(2, 4) = 2
+Complete Block 1: block_min[1] = 1
+Partial Block 2: element [6, 7] → min(6, 8) = 6
+
+Answer: min(2, 1, 6) = 1</code></pre>
+<h3 id="visual-of-query">Visual of Query</h3>
+<pre><code>Query [1, 7]:
+[5, |2, 4] [7, 1, 3] [6, 8|, 9]
+    ↑^^^^   ^^^^^^^^   ^^^^↑
+    partial complete  partial</code></pre>
+<h3 id="time-complexity-deep-dive-3">Time Complexity Deep Dive</h3>
+<h4 id="why-is-preprocessing-on">Why is Preprocessing O(n)?</h4>
+<pre><code>Preprocessing steps:
+1. Determine block size = √n           → O(1)
+2. Create block_min array of size √n   → O(√n)
+3. For each element in array:          → n iterations
+   - Assign to a block                 → O(1)
+   - Update block minimum              → O(1)
+Total: O(1) + O(√n) + n×O(1) = O(n)</code></pre>
+<p><strong>Detailed breakdown:</strong></p>
+<div class="sourceCode" id="cb37"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>block_size <span class="op">=</span> sqrt<span class="op">(</span>n<span class="op">);</span>                  <span class="co">// O(1)</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span>         <span class="co">// n iterations</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> block_id <span class="op">=</span> i <span class="op">/</span> block_size<span class="op">;</span>     <span class="co">// O(1) - integer division</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    block_min<span class="op">[</span>block_id<span class="op">]</span> <span class="op">=</span> min<span class="op">(</span>block_min<span class="op">[</span>block_id<span class="op">],</span> arr<span class="op">[</span>i<span class="op">]);</span> <span class="co">// O(1)</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>Total<span class="op">:</span> O<span class="op">(</span>n<span class="op">)</span></span></code></pre></div>
+<h4 id="why-is-query-time-on-1">Why is Query Time O(√n)?</h4>
+<p><strong>Three parts of any query:</strong></p>
+<ol type="1">
+<li><strong>Left partial block:</strong> Up to √n - 1 elements</li>
+<li><strong>Complete middle blocks:</strong> Up to √n - 2 blocks (each
+takes O(1) to check)</li>
+<li><strong>Right partial block:</strong> Up to √n - 1 elements</li>
+</ol>
+<pre><code>Worst case analysis:
+- Left partial: √n - 1 comparisons
+- Middle blocks: √n - 2 lookups
+- Right partial: √n - 1 comparisons
+Total: (√n - 1) + (√n - 2) + (√n - 1) = 3√n - 4 = O(√n)</code></pre>
+<p><strong>Example with n = 100 (block_size = 10):</strong></p>
+<pre><code>Query(5, 84):
+- Left partial [5-9]: 5 elements     → 5 operations
+- Middle blocks [10-79]: 7 blocks    → 7 operations
+- Right partial [80-84]: 5 elements  → 5 operations
+Total: 17 operations ≈ 1.7√n</code></pre>
+<h4 id="why-block-size-n-is-optimal">Why Block Size = √n is
+Optimal?</h4>
+<p>Let’s analyze with block size = b:</p>
+<pre><code>- Number of blocks: n/b
+- Elements per block: b
+- Query time: O(b) for partials + O(n/b) for complete blocks
+
+Total query time: O(b + n/b)
+To minimize, take derivative and set to 0:
+d/db (b + n/b) = 1 - n/b² = 0
+b² = n
+b = √n</code></pre>
+<p><strong>What if we use different block sizes?</strong> - Block size =
+n/10: Query = O(n/10), not good! - Block size = 10: Query = O(n/10),
+still linear! - Block size = √n: Query = O(√n), perfectly balanced!</p>
+<h4 id="space-complexity-on-n">Space Complexity: O(√n + n)</h4>
+<pre><code>Storage requirements:
+- Original array: n elements × 4 bytes = 4n bytes
+- Block minimums: √n blocks × 4 bytes = 4√n bytes
+- Block boundaries: 2√n integers = 8√n bytes (optional)
+Total: O(n + √n) = O(n)</code></pre>
+<p>But we often say O(√n) for <em>additional</em> space beyond the input
+array.</p>
+<h4 id="update-complexity-o1">Update Complexity: O(1)</h4>
+<p><strong>This is where Block Decomposition shines!</strong></p>
+<pre><code>Update(index, new_value):
+1. Update array[index] = new_value     → O(1)
+2. Find block_id = index / block_size  → O(1)
+3. Recompute minimum for that block    → O(√n)
+   OR
+   If new_value &lt; block_min: update   → O(1)
+   If old_value was min: recompute    → O(√n)</code></pre>
+<p>Smart update strategy: - If new value is smaller than block min: O(1)
+- Otherwise: O(√n) to recompute one block - Compare to other algorithms:
+- Sparse Table: O(n log n) rebuild everything! - DP: O(n²) rebuild
+everything!</p>
+<h4 id="real-world-performance-3">Real-world Performance</h4>
+<p>For n = 1,000,000 (block_size ≈ 1,000): - Preprocessing: ~1
+millisecond - Memory used: ~4 KB extra (just block minimums) - Query
+time: ~1 microsecond - Update time: ~1 microsecond (average case)</p>
+<p><strong>Performance comparison:</strong></p>
+<pre><code>Algorithm    | Query    | Update    | Memory
+-------------|----------|-----------|--------
+Naive        | 1000 μs  | 0.01 μs   | 0
+Block Decomp | 1 μs     | 1 μs      | 4 KB
+Sparse Table | 0.05 μs  | 20,000 μs | 80 MB</code></pre>
+<h4
+id="mathematical-beauty-the-square-root-appears-everywhere">Mathematical
+Beauty: The Square Root Appears Everywhere!</h4>
+<p>For array of size n with block size √n: - Number of blocks: √n -
+Elements per block: √n - Query touches at most: 2√n elements + √n blocks
+= 3√n - Update affects: √n elements (one block) - Extra space: √n block
+minimums</p>
+<p><strong>When to Use:</strong> - Need both queries and updates - Array
+size up to 10⁸ elements - Can’t afford O(n log n) space - Updates are as
+common as queries</p>
+<hr />
+<h2 id="algorithm-5-lca-based-rmq-the-tree-transformation">Algorithm 5:
+LCA-based RMQ (The Tree Transformation!)</h2>
+<h3 id="the-amazing-connection">The Amazing Connection</h3>
+<p>RMQ can be transformed into finding the Lowest Common Ancestor (LCA)
+in a tree! We build a special tree called a Cartesian Tree.</p>
+<h3 id="building-the-cartesian-tree-step-by-step">Building the Cartesian
+Tree Step-by-Step</h3>
+<p><strong>Array:</strong> [5, 2, 4, 7, 1, 3]</p>
+<h4 id="rules-for-cartesian-tree">Rules for Cartesian Tree:</h4>
+<ol type="1">
+<li>In-order traversal gives the original array</li>
+<li>Parent is always smaller than children (min-heap property)</li>
+</ol>
+<h4 id="construction-process">Construction Process:</h4>
+<p><strong>Step 1:</strong> Add 5</p>
+<pre><code>    5</code></pre>
+<p><strong>Step 2:</strong> Add 2 (smaller than 5, becomes new root)</p>
+<pre><code>    2
+     \
+      5</code></pre>
+<p><strong>Step 3:</strong> Add 4 (larger than 2, smaller than 5)</p>
+<pre><code>    2
+     \
+      4
+       \
+        5</code></pre>
+<p><strong>Step 4:</strong> Add 7 (larger than all)</p>
+<pre><code>    2
+     \
+      4
+       \
+        5
+         \
+          7</code></pre>
+<p><strong>Step 5:</strong> Add 1 (smallest, becomes new root)</p>
+<pre><code>        1
+       / \
+      2   3
+       \
+        4
+         \
+          5
+           \
+            7</code></pre>
+<p>Wait, that’s not right! Let me rebuild properly:</p>
+<p><strong>Step 5:</strong> Add 1 (smallest so far, becomes new
+root)</p>
+<pre><code>    1
+   /
+  2
+   \
+    4
+     \
+      5
+       \
+        7</code></pre>
+<p><strong>Step 6:</strong> Add 3 (larger than 1, goes to right)</p>
+<pre><code>      1
+     / \
+    2   3
+     \
+      4
+       \
+        5
+         \
+          7</code></pre>
+<h3 id="final-cartesian-tree">Final Cartesian Tree</h3>
+<pre><code>Array: [5, 2, 4, 7, 1, 3]
+Index:  0  1  2  3  4  5
+
+Tree:
+        1(idx:4)
+       /        \
+    2(idx:1)   3(idx:5)
+   /        \
+5(idx:0)   4(idx:2)
+              \
+            7(idx:3)</code></pre>
+<h3 id="how-rmq-becomes-lca">How RMQ becomes LCA</h3>
+<p><strong>Key Insight:</strong> The minimum element in range [L, R] is
+the LCA of nodes at positions L and R!</p>
+<h4 id="example-query1-3---find-min-between-indices-1-and-3">Example:
+Query(1, 3) - Find min between indices 1 and 3</h4>
+<ol type="1">
+<li>Find nodes at indices 1 and 3 in the tree
+<ul>
+<li>Index 1 → Node with value 2</li>
+<li>Index 3 → Node with value 7</li>
+</ul></li>
+<li>Find their LCA:
+<ul>
+<li>Path from 2 to root: 2 → 1</li>
+<li>Path from 7 to root: 7 → 4 → 2 → 1</li>
+<li>Common ancestor: 2</li>
+</ul></li>
+<li>Answer: 2</li>
+</ol>
+<h3 id="lca-using-binary-lifting">LCA using Binary Lifting</h3>
+<p>We store ancestors at powers of 2 distances:</p>
+<h4 id="ancestor-table">Ancestor Table</h4>
+<pre><code>Node    Parent  2^1-ancestor  2^2-ancestor
+1       null    null          null
+2       1       null          null
+5       2       1             null
+4       2       1             null
+7       4       2             null
+3       1       null          null</code></pre>
+<h3 id="time-complexity-deep-dive-4">Time Complexity Deep Dive</h3>
+<h4 id="building-the-cartesian-tree-on">Building the Cartesian Tree:
+O(n)</h4>
+<p><strong>The amazing linear-time construction using a
+stack:</strong></p>
+<div class="sourceCode" id="cb53"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>stack<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> st<span class="op">;</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span>           <span class="co">// n iterations</span></span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> last_popped <span class="op">=</span> <span class="op">-</span><span class="dv">1</span><span class="op">;</span></span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="op">(!</span>st<span class="op">.</span>empty<span class="op">()</span> <span class="op">&amp;&amp;</span> arr<span class="op">[</span>st<span class="op">.</span>top<span class="op">()]</span> <span class="op">&gt;</span> arr<span class="op">[</span>i<span class="op">])</span> <span class="op">{</span>  <span class="co">// amortized O(1)</span></span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>        last_popped <span class="op">=</span> st<span class="op">.</span>top<span class="op">();</span></span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>        st<span class="op">.</span>pop<span class="op">();</span></span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Set parent-child relationships - all O(1)</span></span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>st<span class="op">.</span>empty<span class="op">())</span> right_child<span class="op">[</span>st<span class="op">.</span>top<span class="op">()]</span> <span class="op">=</span> i<span class="op">;</span></span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>last_popped <span class="op">!=</span> <span class="op">-</span><span class="dv">1</span><span class="op">)</span> left_child<span class="op">[</span>i<span class="op">]</span> <span class="op">=</span> last_popped<span class="op">;</span></span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a>    st<span class="op">.</span>push<span class="op">(</span>i<span class="op">);</span></span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>Why is the while loop O(1) amortized?</strong> - Each element
+is pushed exactly once: n pushes total - Each element is popped at most
+once: ≤n pops total - Total operations across all iterations: 2n = O(n)
+- Amortized per iteration: O(1)</p>
+<h4 id="lca-preprocessing-on-log-n-for-binary-lifting">LCA
+Preprocessing: O(n log n) for Binary Lifting</h4>
+<p><strong>Building the ancestor table:</strong></p>
+<pre><code>For each node (n nodes):
+    For each power of 2 up to log n:
+        ancestor[node][j] = ancestor[ancestor[node][j-1]][j-1]
+        
+Total: n × log n entries × O(1) per entry = O(n log n)</code></pre>
+<p><strong>Detailed breakdown:</strong></p>
+<pre><code>Level 0: Store immediate parents        → n × 1 = n operations
+Level 1: Store 2-hop ancestors         → n × 1 = n operations  
+Level 2: Store 4-hop ancestors         → n × 1 = n operations
+...
+Level log n: Store 2^(log n) ancestors → n × 1 = n operations
+
+Total: n × (log n + 1) = O(n log n)</code></pre>
+<h4 id="query-time-olog-n-for-binary-lifting-lca">Query Time: O(log n)
+for Binary Lifting LCA</h4>
+<p><strong>Finding LCA of nodes u and v:</strong></p>
+<pre><code>1. Bring u and v to same depth:
+   - Calculate depths                → O(1) if preprocessed
+   - Jump up using binary lifting    → O(log n) jumps maximum
+   
+2. Binary search for LCA:
+   for j from log n down to 0:       → log n iterations
+       if ancestor[u][j] != ancestor[v][j]:
+           u = ancestor[u][j]
+           v = ancestor[v][j]        → O(1) per iteration
+   
+   LCA = parent[u]                   → O(1)
+   
+Total: O(log n) + O(log n) = O(log n)</code></pre>
+<p><strong>Example with depth difference = 13:</strong></p>
+<pre><code>13 in binary = 1101
+Jump by: 2^3 + 2^2 + 2^0 = 8 + 4 + 1 = 13
+Number of jumps: 3 (number of 1s in binary)
+Maximum jumps: log n</code></pre>
+<h4 id="alternative-o1-query-with-euler-tour-rmq">Alternative: O(1)
+Query with Euler Tour + RMQ</h4>
+<p><strong>Preprocessing steps:</strong> 1. Build Cartesian Tree: O(n)
+2. Euler Tour of tree: O(n) - visit each edge twice 3. Build RMQ on
+depths: O(n) for ±1 RMQ Total: O(n)</p>
+<p><strong>Query:</strong> 1. Find first occurrence of u and v in tour:
+O(1) with preprocessing 2. RMQ on depth array between them: O(1) with ±1
+RMQ Total: O(1)</p>
+<p>This gives us O(n) preprocessing and O(1) query!</p>
+<h4 id="space-complexity-analysis">Space Complexity Analysis</h4>
+<p><strong>Binary Lifting approach:</strong></p>
+<pre><code>- Cartesian Tree: n nodes × 3 pointers = 3n pointers
+- Ancestor table: n nodes × log n levels = n log n entries
+- Depth array: n integers
+Total: O(n log n)</code></pre>
+<p><strong>Euler Tour approach:</strong></p>
+<pre><code>- Cartesian Tree: 3n pointers
+- Euler tour: 2n - 1 entries
+- Depth array: 2n - 1 entries
+- First occurrence: n entries
+- ±1 RMQ structure: O(n)
+Total: O(n)</code></pre>
+<h4 id="why-transform-rmq-to-lca">Why Transform RMQ to LCA?</h4>
+<p><strong>Theoretical importance:</strong> - Shows RMQ ≡ LCA
+(equivalent problems) - Any LCA solution gives RMQ solution - Any RMQ
+solution gives LCA solution - Unifies two seemingly different
+problems</p>
+<p><strong>Practical benefits:</strong> - Reuse existing LCA code - Some
+LCA variants are easier to solve - Opens door to other tree
+algorithms</p>
+<h4 id="real-world-performance-4">Real-world Performance</h4>
+<p>For n = 100,000: - Cartesian tree construction: ~10 ms - LCA
+preprocessing: ~15 ms - Total preprocessing: ~25 ms - Query time: ~0.2
+microseconds - Memory: ~8 MB</p>
+<p><strong>Comparison with direct approaches:</strong></p>
+<pre><code>Algorithm    | Preprocessing | Query   | Theoretical Interest
+-------------|---------------|---------|--------------------
+Sparse Table | 12 ms        | 0.05 μs | Low
+LCA-based    | 25 ms        | 0.20 μs | Very High</code></pre>
+<p>The LCA approach is slightly slower but demonstrates beautiful
+theoretical connections!</p>
+<p><strong>When to Use:</strong> - You already have LCA code - Working
+with tree-related problems - Need to understand RMQ-LCA equivalence -
+Academic/competitive programming context</p>
+<hr />
+<h2 id="comparison-which-algorithm-to-choose">Comparison: Which
+Algorithm to Choose?</h2>
+<h3 id="quick-decision-guide">Quick Decision Guide</h3>
+<pre><code>Need fast updates?
+├─ YES → Use Naive (no preprocessing) or Block Decomposition
+└─ NO → Continue...
+   │
+   Need O(1) queries?
+   ├─ YES → Use Sparse Table (best) or DP (if n &lt; 1000)
+   └─ NO → Continue...
+      │
+      Array size &gt; 10000?
+      ├─ YES → Use Sparse Table or Block Decomposition
+      └─ NO → Use DP (simplest for small arrays)</code></pre>
+<h3 id="performance-summary-table">Performance Summary Table</h3>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 22%" />
+<col style="width: 22%" />
+<col style="width: 15%" />
+<col style="width: 18%" />
+</colgroup>
+<thead>
+<tr>
+<th>Algorithm</th>
+<th>Build Time</th>
+<th>Query Time</th>
+<th>Space</th>
+<th>Best For</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Naive</td>
+<td>O(1)</td>
+<td>O(n)</td>
+<td>O(n)</td>
+<td>Rare queries, frequent updates</td>
+</tr>
+<tr>
+<td>DP</td>
+<td>O(n²)</td>
+<td>O(1)</td>
+<td>O(n²)</td>
+<td>Small arrays, many queries</td>
+</tr>
+<tr>
+<td>Sparse Table</td>
+<td>O(n log n)</td>
+<td>O(1)</td>
+<td>O(n log n)</td>
+<td>Static arrays, fastest queries</td>
+</tr>
+<tr>
+<td>Block Decomp</td>
+<td>O(n)</td>
+<td>O(√n)</td>
+<td>O(√n)</td>
+<td>Balanced operations</td>
+</tr>
+<tr>
+<td>LCA-based</td>
+<td>O(n log n)</td>
+<td>O(log n)</td>
+<td>O(n log n)</td>
+<td>Theoretical interest</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="interactive-examples">Interactive Examples</h2>
+<h3 id="lets-trace-through-a-complete-example">Let’s Trace Through a
+Complete Example</h3>
+<p><strong>Array:</strong> [3, 1, 4, 1, 5, 9, 2, 6]</p>
+<h4 id="query2-6-find-minimum-in-range-2-6">Query(2, 6) = Find minimum
+in range [2, 6]</h4>
+<p><strong>Naive Approach:</strong></p>
+<pre><code>Check index 2: value = 4, min = 4
+Check index 3: value = 1, min = 1
+Check index 4: value = 5, min = 1
+Check index 5: value = 9, min = 1
+Check index 6: value = 2, min = 1
+Answer: 1</code></pre>
+<p><strong>DP Approach:</strong></p>
+<pre><code>Look up dp[2][6] = 1 (pre-calculated)
+Answer: 1</code></pre>
+<p><strong>Sparse Table:</strong></p>
+<pre><code>Range length = 5
+Largest power of 2 ≤ 5 = 4
+Query ranges: [2,5] and [3,6]
+st[2][2] = 1, st[3][2] = 1
+Answer: min(1, 1) = 1</code></pre>
+<p><strong>Block Decomposition (block_size = 3):</strong></p>
+<pre><code>Blocks: [3,1,4] [1,5,9] [2,6,-]
+Query spans partial block 0, complete block 1, partial block 2
+Partial 0: min(4) = 4
+Complete 1: block_min = 1
+Partial 2: min(2) = 2
+Answer: min(4, 1, 2) = 1</code></pre>
+<hr />
+<h2 id="practice-problems">Practice Problems</h2>
+<h3 id="problem-1-build-your-own-dp-table">Problem 1: Build Your Own DP
+Table</h3>
+<p>Array: [4, 2, 3, 1]</p>
+<p>Fill in the DP table:</p>
+<pre><code>    j→  0  1  2  3
+i↓     -----------
+0  |   ?  ?  ?  ?
+1  |   -  ?  ?  ?
+2  |   -  -  ?  ?
+3  |   -  -  -  ?</code></pre>
+<details>
+<summary>
+Solution
+</summary>
+<pre><code>    j→  0  1  2  3
+i↓     -----------
+0  |   4  2  2  1
+1  |   -  2  2  1
+2  |   -  -  3  1
+3  |   -  -  -  1</code></pre>
+</details>
+<h3 id="problem-2-sparse-table-query">Problem 2: Sparse Table Query</h3>
+<p>Given sparse table for array [6, 2, 5, 1, 7, 3]:</p>
+<pre><code>st[0][0]=6, st[0][1]=2, st[0][2]=1
+st[1][0]=2, st[1][1]=2, st[1][2]=1
+st[2][0]=5, st[2][1]=1, st[2][2]=1
+st[3][0]=1, st[3][1]=1
+st[4][0]=7, st[4][1]=3
+st[5][0]=3</code></pre>
+<p>What is Query(1, 4)?</p>
+<details>
+<summary>
+Solution
+</summary>
+Range length = 4, use k = 2 (2^2 = 4) Query ranges: [1,4] covered by
+st[1][2] = 1 Answer: 1
+</details>
+<hr />
+<h2 id="tips-and-tricks">Tips and Tricks</h2>
+<h3 id="sparse-table-power-of-2-trick">1. Sparse Table Power-of-2
+Trick</h3>
+<p>Use bit operations for fast power-of-2 calculations:</p>
+<div class="sourceCode" id="cb69"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> k <span class="op">=</span> <span class="fu">__builtin_clz</span><span class="op">(</span><span class="dv">1</span><span class="op">)</span> <span class="op">-</span> <span class="fu">__builtin_clz</span><span class="op">(</span>range_length<span class="op">);</span></span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a><span class="co">// or</span></span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> k <span class="op">=</span> floor<span class="op">(</span>log2<span class="op">(</span>range_length<span class="op">));</span></span></code></pre></div>
+<h3 id="block-size-selection">2. Block Size Selection</h3>
+<p>For Block Decomposition, optimal block size is usually: - √n for
+balanced operations - Smaller blocks for faster queries - Larger blocks
+for faster updates</p>
+<h3 id="dp-memory-optimization">3. DP Memory Optimization</h3>
+<p>Only need to store the upper triangle of the DP table since dp[i][j]
+only makes sense when i ≤ j.</p>
+<h3 id="cartesian-tree-stack-trick">4. Cartesian Tree Stack Trick</h3>
+<p>Build Cartesian Tree in O(n) using a stack to maintain the right
+spine of the tree.</p>
+<hr />
+<h2 id="deep-dive-understanding-complexity-growth">Deep Dive:
+Understanding Complexity Growth</h2>
+<h3 id="how-complexities-compare-as-n-grows">How Complexities Compare As
+N Grows</h3>
+<p>Let’s see how each complexity grows with input size:</p>
+<pre><code>n        | log n | √n    | n      | n log n  | n²
+---------|-------|-------|--------|----------|------------
+10       | 3     | 3     | 10     | 33       | 100
+100      | 7     | 10    | 100    | 664      | 10,000
+1,000    | 10    | 32    | 1,000  | 10,000   | 1,000,000
+10,000   | 13    | 100   | 10,000 | 133,000  | 100,000,000
+100,000  | 17    | 316   | 100,000| 1,700,000| 10,000,000,000
+1,000,000| 20    | 1,000 | 1,000,000| 20,000,000| 1,000,000,000,000</code></pre>
+<h3 id="time-complexity-visualization">Time Complexity
+Visualization</h3>
+<pre><code>Operations vs Input Size (log scale)
+     
+10^12 |                                              ██ n²
+10^10 |                                         ████
+10^8  |                                    ████
+10^6  |                        ████████ n log n
+10^4  |              ████████ n
+10^2  |     ████ √n ████
+10^0  |████ log n
+      |________________________________
+       10   100   1K   10K  100K  1M</code></pre>
+<h3 id="when-each-algorithm-wins">When Each Algorithm Wins</h3>
+<h4 id="scenario-1-few-queries-100">Scenario 1: Few Queries (&lt;
+100)</h4>
+<pre><code>Total Time = Preprocessing + (Number of Queries × Query Time)
+
+For 50 queries on n = 100,000:
+- Naive: 0 + 50 × 1000μs = 50,000μs ✓ (Winner!)
+- Sparse Table: 20,000μs + 50 × 0.05μs = 20,002μs
+- Block: 100μs + 50 × 1μs = 150μs</code></pre>
+<h4 id="scenario-2-many-queries-1000000">Scenario 2: Many Queries (&gt;
+1,000,000)</h4>
+<pre><code>For 1,000,000 queries on n = 100,000:
+- Naive: 0 + 1M × 1000μs = 1,000,000,000μs (16 minutes!)
+- Sparse Table: 20,000μs + 1M × 0.05μs = 70,000μs ✓ (Winner!)
+- Block: 100μs + 1M × 1μs = 1,000,100μs</code></pre>
+<h4 id="scenario-3-queries-with-updates">Scenario 3: Queries with
+Updates</h4>
+<pre><code>For 10,000 queries + 1,000 updates on n = 100,000:
+- Naive: 10,000 × 1000μs + 1,000 × 0 = 10,000,000μs
+- Block: 10,000 × 1μs + 1,000 × 1μs = 11,000μs ✓ (Winner!)
+- Sparse Table: Must rebuild after each update = Terrible!</code></pre>
+<h3 id="memory-vs-speed-trade-offs">Memory vs Speed Trade-offs</h3>
+<pre><code>Algorithm    | Memory  | Query Speed | Can Update?
+-------------|---------|-------------|------------
+Naive        | ✓✓✓ 4MB | ✗ Slow      | ✓✓✓ Instant
+DP           | ✗ 40GB  | ✓✓✓ Fastest | ✗ Rebuild all
+Sparse Table | ✓ 6.4MB | ✓✓✓ Fastest | ✗ Rebuild all
+Block        | ✓✓✓ 4MB | ✓ Fast      | ✓✓ Fast
+LCA          | ✓ 8MB   | ✓ Fast      | ✗ Rebuild tree</code></pre>
+<h3 id="big-o-doesnt-tell-the-whole-story">Big-O Doesn’t Tell the Whole
+Story!</h3>
+<h4 id="hidden-constants-matter">Hidden Constants Matter</h4>
+<p>Two O(n) algorithms can differ by 100x in practice:</p>
+<div class="sourceCode" id="cb76"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Algorithm A: O(n) with small constant</span></span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> i<span class="op">++)</span> </span>
+<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a>    sum <span class="op">+=</span> arr<span class="op">[</span>i<span class="op">];</span>  <span class="co">// 1 operation per iteration</span></span>
+<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb76-5"><a href="#cb76-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Algorithm B: O(n) with large constant  </span></span>
+<span id="cb76-6"><a href="#cb76-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb76-7"><a href="#cb76-7" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> complex_hash<span class="op">(</span>arr<span class="op">[</span>i<span class="op">]);</span>     <span class="co">// 50 operations</span></span>
+<span id="cb76-8"><a href="#cb76-8" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> expensive_check<span class="op">(</span>result<span class="op">);</span>  <span class="co">// 30 operations</span></span>
+<span id="cb76-9"><a href="#cb76-9" aria-hidden="true" tabindex="-1"></a>    sum <span class="op">+=</span> result<span class="op">;</span>                      <span class="co">// 80 operations total</span></span>
+<span id="cb76-10"><a href="#cb76-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Both are O(n), but B is 80x slower!</p>
+<h4 id="cache-performance">Cache Performance</h4>
+<p>Modern CPUs have cache hierarchies: - L1 Cache: 0.5 ns access time -
+L2 Cache: 7 ns access time - Main Memory: 100 ns access time</p>
+<pre><code>Sequential access (cache-friendly):
+arr[0], arr[1], arr[2], ...  → All from cache!
+
+Random access (cache-unfriendly):
+arr[1000], arr[0], arr[5000], ...  → Cache misses!</code></pre>
+<p>This is why Sparse Table (sequential access) often beats
+theoretically faster algorithms with random access patterns.</p>
+<h3 id="amortized-analysis-when-average-case-matters">Amortized
+Analysis: When Average Case Matters</h3>
+<h4 id="example-dynamic-array-resizing">Example: Dynamic Array
+Resizing</h4>
+<pre><code>Push operations: 1, 1, 1, (resize+copy:4), 1, 1, 1, 1, (resize+copy:8), ...
+
+Individual operations: O(1) usually, O(n) sometimes
+Amortized (average): O(1) per operation!</code></pre>
+<h4 id="in-rmq-context">In RMQ Context</h4>
+<p>Block Decomposition updates: - Best case: New min is smaller → O(1) -
+Worst case: Recompute block → O(√n) - Amortized: Often O(1) in
+practice</p>
+<h3 id="the-complexity-hierarchy">The Complexity Hierarchy</h3>
+<pre><code>O(1) ⊂ O(log n) ⊂ O(√n) ⊂ O(n) ⊂ O(n log n) ⊂ O(n²) ⊂ O(2^n)
+
+Constant &lt; Logarithmic &lt; Sublinear &lt; Linear &lt; Linearithmic &lt; Quadratic &lt; Exponential</code></pre>
+<p><strong>Rule of thumb for max input sizes:</strong> - O(1), O(log n):
+Any size (limited by memory) - O(√n): Up to 10^14 - O(n): Up to 10^8 -
+O(n log n): Up to 10^6 - O(n²): Up to 10^4 - O(n³): Up to 500 - O(2^n):
+Up to 20</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Each RMQ algorithm represents a different trade-off between
+preprocessing time, query time, space usage, and update capability.
+Understanding not just the big-O notation but also:</p>
+<ul>
+<li>Hidden constants in the implementation</li>
+<li>Cache performance characteristics</li>
+<li>Amortized vs worst-case behavior</li>
+<li>Memory access patterns</li>
+<li>Practical input size limits</li>
+</ul>
+<p>…helps you choose the right algorithm for your specific use case.</p>
+<p>Remember: - <strong>Naive</strong> = No prep, just scan (best for
+rare queries) - <strong>DP</strong> = Pre-calculate everything
+(impractical for large arrays) - <strong>Sparse Table</strong> = Smart
+power-of-2 ranges (best for static arrays) - <strong>Blocks</strong> =
+Divide and conquer (best with updates) - <strong>LCA</strong> =
+Transform to tree problem (theoretical elegance)</p>
+<p>The “best” algorithm depends entirely on your specific
+requirements!</p>
+<p>Happy querying! 🎯</p>
+</body>
+</html>
