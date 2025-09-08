@@ -1,4 +1,10 @@
-# Range Minimum Query: A Friendly Step-by-Step Tutorial
+---
+title: "Range Minimum Query: A Friendly Step-by-Step Tutorial"
+author: "A Comprehensive Guide to RMQ Algorithms"
+date: "2025"
+---
+
+\newpage
 
 ## What is Range Minimum Query (RMQ)?
 
@@ -16,7 +22,7 @@ Value: 5  2  4  7  1  3  6  8
 
 Now, let's explore 5 different ways to solve this problem, from simple to sophisticated!
 
----
+\newpage
 
 ## Algorithm 1: Naive Approach (The Straightforward Way)
 
@@ -83,7 +89,7 @@ For an array of 1,000,000 elements:
 - Array changes frequently (after every few queries)
 - Array is small (< 1000 elements)
 
----
+\newpage
 
 ## Algorithm 2: Dynamic Programming (Pre-calculate Everything!)
 
@@ -208,7 +214,7 @@ For n = 1,000:
 - Can afford O(n²) memory
 - Static data (no updates)
 
----
+\newpage
 
 ## Algorithm 3: Sparse Table (Binary Lifting Magic!)
 
@@ -398,7 +404,7 @@ For n = 100,000:
 - Can afford O(n log n) preprocessing
 - No updates to the array
 
----
+\newpage
 
 ## Algorithm 4: Block Decomposition (Square Root Decomposition)
 
@@ -590,7 +596,7 @@ For array of size n with block size √n:
 - Can't afford O(n log n) space
 - Updates are as common as queries
 
----
+\newpage
 
 ## Algorithm 5: LCA-based RMQ (The Tree Transformation!)
 
@@ -877,7 +883,7 @@ The LCA approach is slightly slower but demonstrates beautiful theoretical conne
 - Need to understand RMQ-LCA equivalence
 - Academic/competitive programming context
 
----
+\newpage
 
 ## Comparison: Which Algorithm to Choose?
 
@@ -907,7 +913,7 @@ Need fast updates?
 | Block Decomp | O(n) | O(√n) | O(√n) | Balanced operations |
 | LCA-based | O(n log n) | O(log n) | O(n log n) | Theoretical interest |
 
----
+\newpage
 
 ## Interactive Examples
 
@@ -952,7 +958,7 @@ Partial 2: min(2) = 2
 Answer: min(4, 1, 2) = 1
 ```
 
----
+\newpage
 
 ## Practice Problems
 
@@ -1003,7 +1009,7 @@ Query ranges: [1,4] covered by st[1][2] = 1
 Answer: 1
 </details>
 
----
+\newpage
 
 ## Tips and Tricks
 
@@ -1027,7 +1033,7 @@ Only need to store the upper triangle of the DP table since dp[i][j] only makes 
 ### 4. Cartesian Tree Stack Trick
 Build Cartesian Tree in O(n) using a stack to maintain the right spine of the tree.
 
----
+\newpage
 
 ## Deep Dive: Understanding Complexity Growth
 
